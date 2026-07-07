@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<h1>News Feed</h1>
+
+
+<p>
+Articles received: {{ articles|length }}
+</p>
+
+
+{% for article in articles %}
+
+<hr>
+
+<h2>
+{{ article.title }}
+</h2>
+
+<p>
+{{ article.description }}
+</p>
+
+<a href="{{ article.url }}" target="_blank">
+Read Article
+</a>
+
+
+{% endfor %}
+
+
+{% endblock %}
