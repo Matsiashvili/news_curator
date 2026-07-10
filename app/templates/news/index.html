@@ -395,29 +395,185 @@ News Feed
 {% endif %}
 
 
-<nav class="mt-5">
+{% if articles and total_pages > 1 %}
 
-    <ul class="pagination justify-content-center">
+    <nav class="mt-5"
+         aria-label="News pagination">
 
-        {% if page > 1 %}
+        <ul class="pagination justify-content-center flex-wrap">
 
-            <li class="page-item">
+            <!-- PREVIOUS -->
+            <li class="page-item
+                {% if page <= 1 %}
+                    disabled
+                {% endif %}
+            ">
 
-                <a class="page-link"
-                   href="{{ url_for('news.index',
-                                    page=page-1,
-                                    category=category,
-                                    country=country,
-                                    source=source,
-                                    q=query) }}">
+                {% if page > 1 %}
 
-                    Previous
+                    <a class="page-link"
+                       href="{{ url_for(
+                           'news.index',
+                           page=page - 1,
+                           category=category,
+                           country=country,
+                           source=source,
+                           q=query
+                       ) }}">
 
-                </a>
+                        Previous
+
+                    </a>
+
+                {% else %}
+
+                    <span class="page-link">
+                        Previous
+                    </span>
+
+                {% endif %}
 
             </li>
 
-        {% endif %}
+
+            <!-- FIRST PAGE -->
+            {% if page_numbers and page_numbers[0] > 1 %}
+
+                <li class="page-item">
+
+                    <a class="page-link"
+                       href="{{ url_for(
+                           'news.index',
+                           page=1,
+                           category=category,
+                           country=country,
+                           source=source,
+                           q=query
+                       ) }}">
+
+                        1
+
+                    </a>
+
+                </li>
+
+                {% if page_numbers[0] > 2 %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            …
+                        </span>
+                    </li>
+
+                {% endif %}
+
+            {% endif %}
+
+
+            <!-- NEARBY PAGE NUMBERS -->
+            {% for page_number in page_numbers %}
+
+                <li class="page-item
+                    {% if page_number == page %}
+                        active
+                    {% endif %}
+                ">
+
+                    <a class="page-link"
+                       href="{{ url_for(
+                           'news.index',
+                           page=page_number,
+                           category=category,
+                           country=country,
+                           source=source,
+                           q=query
+                       ) }}">
+
+                        {{ page_number }}
+
+                    </a>
+
+                </li>
+
+            {% endfor %}
+
+
+            <!-- LAST PAGE -->
+            {% if page_numbers and page_numbers[-1] < total_pages %}
+
+                {% if page_numbers[-1] < total_pages - 1 %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            …
+                        </span>
+                    </li>
+
+                {% endif %}
+
+                <li class="page-item">
+
+                    <a class="page-link"
+                       href="{{ url_for(
+                           'news.index',
+                           page=total_pages,
+                           category=category,
+                           country=country,
+                           source=source,
+                           q=query
+                       ) }}">
+
+                        {{ total_pages }}
+
+                    </a>
+
+                </li>
+
+            {% endif %}
+
+
+            <!-- NEXT -->
+            <li class="page-item
+                {% if page >= total_pages %}
+                    disabled
+                {% endif %}
+            ">
+
+                {% if page < total_pages %}
+
+                    <a class="page-link"
+                       href="{{ url_for(
+                           'news.index',
+                           page=page + 1,
+                           category=category,
+                           country=country,
+                           source=source,
+                           q=query
+                       ) }}">
+
+                        Next
+
+                    </a>
+
+                {% else %}
+
+                    <span class="page-link">
+                        Next
+                    </span>
+
+                {% endif %}
+
+            </li>
+
+        </ul>
+
+        <p class="text-center text-muted small">
+            Page {{ page }} of {{ total_pages }}
+        </p>
+
+    </nav>
+
+{% endif %}
 
 
         <li class="page-item active">
