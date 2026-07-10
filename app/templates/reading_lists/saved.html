@@ -5,25 +5,22 @@ Saved Articles
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
 
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="fw-bold mb-1">
             Saved Articles
         </h1>
 
         <p class="text-muted mb-0">
-            Manage saved articles, notes, and reading status.
+            Manage saved articles, notes, tags, and reading status.
         </p>
     </div>
 
     <a href="{{ url_for('reading_lists.lists') }}"
        class="btn btn-outline-primary">
-
         Reading Lists
-
     </a>
-
 </div>
 
 
@@ -33,7 +30,7 @@ Saved Articles
 
         {% for article in articles %}
 
-            <div class="col-md-4">
+            <div class="col-md-6 col-lg-4">
 
                 <div class="news-card h-100 d-flex flex-column">
 
@@ -41,7 +38,7 @@ Saved Articles
 
                         <img src="{{ article.image_url }}"
                              class="news-image"
-                             alt="Article image">
+                             alt="{{ article.title }}">
 
                     {% else %}
 
@@ -62,8 +59,8 @@ Saved Articles
                             {{ article.title }}
                         </h5>
 
-                        <p class="small text-muted mb-2">
 
+                        <p class="small text-muted mb-2">
                             Status:
 
                             {% if article.is_read %}
@@ -79,8 +76,8 @@ Saved Articles
                                 </span>
 
                             {% endif %}
-
                         </p>
+
 
                         <p class="small text-muted">
                             Saved:
@@ -113,15 +110,13 @@ Saved Articles
 
                             <button type="submit"
                                     class="btn btn-outline-primary btn-sm mt-2 w-100">
-
                                 Save Note
-
                             </button>
 
                         </form>
 
 
-                        <!-- DELETE NOTE BUTTON -->
+                        <!-- DELETE NOTE -->
                         {% if article.notes %}
 
                             <form method="POST"
@@ -133,15 +128,15 @@ Saved Articles
                                        value="{{ csrf_token() }}">
 
                                 <button type="submit"
-                                        class="btn btn-outline-danger btn-sm w-100">
-
+                                        class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Delete this note?');">
                                     Delete Note
-
                                 </button>
 
                             </form>
 
                         {% endif %}
+
 
                         <!-- TAGS -->
                         <div class="mb-3">
@@ -161,18 +156,17 @@ Saved Articles
                                         </span>
 
                                         <form method="POST"
-                                            action="{{ url_for('reading_lists.remove_tag', article_id=article.id, tag_id=tag.id) }}"
-                                            class="d-inline">
+                                              action="{{ url_for('reading_lists.remove_tag', article_id=article.id, tag_id=tag.id) }}"
+                                              class="d-inline">
 
                                             <input type="hidden"
-                                                name="csrf_token"
-                                                value="{{ csrf_token() }}">
+                                                   name="csrf_token"
+                                                   value="{{ csrf_token() }}">
 
                                             <button type="submit"
-                                                    class="btn btn-sm btn-link text-danger p-0 me-2">
-
-                                                x
-
+                                                    class="btn btn-sm btn-link text-danger p-0 me-2"
+                                                    title="Remove tag">
+                                                ×
                                             </button>
 
                                         </form>
@@ -189,21 +183,26 @@ Saved Articles
 
                             </div>
 
+
+                            <!-- ADD TAG -->
                             <form method="POST"
-                                action="{{ url_for('reading_lists.add_tag', article_id=article.id) }}">
+                                  action="{{ url_for('reading_lists.add_tag', article_id=article.id) }}">
 
                                 <input type="hidden"
-                                    name="csrf_token"
-                                    value="{{ csrf_token() }}">
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
 
                                 <div class="input-group input-group-sm">
 
                                     <input type="text"
-                                        name="tag_name"
-                                        class="form-control"
-                                        placeholder="Add tag">
+                                           name="tag_name"
+                                           class="form-control"
+                                           maxlength="50"
+                                           placeholder="Add tag"
+                                           required>
 
-                                    <button class="btn btn-outline-primary">
+                                    <button type="submit"
+                                            class="btn btn-outline-primary">
                                         Add
                                     </button>
 
@@ -212,15 +211,16 @@ Saved Articles
                             </form>
 
                         </div>
+
+
                         <div class="mt-auto d-grid gap-2">
 
-                            <!-- READ ARTICLE -->
+                            <!-- OPEN ARTICLE -->
                             <a href="{{ url_for('reading_lists.read_saved_article', article_id=article.id) }}"
                                target="_blank"
+                               rel="noopener noreferrer"
                                class="btn btn-dark btn-sm">
-
                                 Read Article
-
                             </a>
 
 
@@ -255,10 +255,9 @@ Saved Articles
                                        value="{{ csrf_token() }}">
 
                                 <button type="submit"
-                                        class="btn btn-outline-danger btn-sm w-100">
-
+                                        class="btn btn-outline-danger btn-sm w-100"
+                                        onclick="return confirm('Are you sure you want to remove this article?');">
                                     Remove Article
-
                                 </button>
 
                             </form>
@@ -275,6 +274,95 @@ Saved Articles
 
     </div>
 
+
+    <!-- PAGINATION -->
+    {% if pagination.pages > 1 %}
+
+        <nav class="mt-5"
+             aria-label="Saved articles pagination">
+
+            <ul class="pagination justify-content-center">
+
+                <!-- PREVIOUS -->
+                <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+
+                    {% if pagination.has_prev %}
+
+                        <a class="page-link"
+                           href="{{ url_for('reading_lists.saved_articles', page=pagination.prev_num) }}">
+                            Previous
+                        </a>
+
+                    {% else %}
+
+                        <span class="page-link">
+                            Previous
+                        </span>
+
+                    {% endif %}
+
+                </li>
+
+
+                <!-- PAGE NUMBERS -->
+                {% for page_number in pagination.iter_pages(
+                    left_edge=1,
+                    right_edge=1,
+                    left_current=2,
+                    right_current=2
+                ) %}
+
+                    {% if page_number %}
+
+                        <li class="page-item {% if page_number == pagination.page %}active{% endif %}">
+
+                            <a class="page-link"
+                               href="{{ url_for('reading_lists.saved_articles', page=page_number) }}">
+                                {{ page_number }}
+                            </a>
+
+                        </li>
+
+                    {% else %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                …
+                            </span>
+                        </li>
+
+                    {% endif %}
+
+                {% endfor %}
+
+
+                <!-- NEXT -->
+                <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+
+                    {% if pagination.has_next %}
+
+                        <a class="page-link"
+                           href="{{ url_for('reading_lists.saved_articles', page=pagination.next_num) }}">
+                            Next
+                        </a>
+
+                    {% else %}
+
+                        <span class="page-link">
+                            Next
+                        </span>
+
+                    {% endif %}
+
+                </li>
+
+            </ul>
+
+        </nav>
+
+    {% endif %}
+
+
 {% else %}
 
     <div class="alert alert-info">
@@ -284,4 +372,3 @@ Saved Articles
 {% endif %}
 
 {% endblock %}
-

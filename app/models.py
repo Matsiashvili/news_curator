@@ -197,7 +197,9 @@ class Note(db.Model):
 
     updated_at = db.Column(
         db.DateTime,
-        default=datetime.utcnow
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
     )
 
 

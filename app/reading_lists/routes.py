@@ -12,6 +12,7 @@ from sqlalchemy import func
 
 from app.extensions import db
 from app.decorators import login_required
+from app.reading_lists.services import ReadingListService
 
 from app.models import (
     ReadingList,
@@ -75,22 +76,34 @@ def create_list():
 @reading_lists_bp.route("/saved")
 @login_required
 def saved_articles():
-
     user_id = session["user_id"]
 
-    articles = SavedArticle.query.filter_by(
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    pagination = SavedArticle.query.filter_by(
         user_id=user_id
     ).order_by(
         SavedArticle.saved_at.desc()
-    ).all()
+    ).paginate(
+        page=page,
+        per_page=15,
+        error_out=False
+    )
 
     reading_lists = ReadingList.query.filter_by(
         user_id=user_id
+    ).order_by(
+        ReadingList.created_at.asc()
     ).all()
 
     return render_template(
         "reading_lists/saved.html",
-        articles=articles,
+        articles=pagination.items,
+        pagination=pagination,
         reading_lists=reading_lists
     )
 
@@ -98,19 +111,36 @@ def saved_articles():
 @reading_lists_bp.route("/save", methods=["POST"])
 @login_required
 def save_articles():
-
     user_id = session["user_id"]
 
-    title = request.form.get("title")
-    url = request.form.get("url")
+    title = request.form.get(
+        "title",
+        ""
+    ).strip()
+
+    url = request.form.get(
+        "url",
+        ""
+    ).strip()
+
     source = request.form.get("source")
     image_url = request.form.get("image_url")
     published_at = request.form.get("published_at")
-    list_id = request.form.get("list_id")
+
+    list_id = request.form.get(
+        "list_id",
+        type=int
+    )
 
     if not title or not url:
-        flash("Article data is missing.", "danger")
-        return redirect(url_for("news.index"))
+        flash(
+            "Article title and URL are required.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("news.index")
+        )
 
     existing_article = SavedArticle.query.filter_by(
         user_id=user_id,
@@ -118,29 +148,41 @@ def save_articles():
     ).first()
 
     if existing_article:
-        flash("Article is already saved.", "warning")
-        return redirect(url_for("news.index"))
+        flash(
+            "Article is already saved.",
+            "warning"
+        )
 
-    if not list_id:
-        default_list = ReadingList.query.filter_by(
-            user_id=user_id,
-            name="Saved Articles"
-        ).first()
+        return redirect(
+            url_for("news.index")
+        )
 
-        if not default_list:
-            default_list = ReadingList(
-                name="Saved Articles",
-                user_id=user_id
+    if list_id is None:
+        reading_list = (
+            ReadingListService.get_or_create_default_list(
+                user_id
+            )
+        )
+
+    else:
+        reading_list = ReadingListService.get_user_list(
+            user_id,
+            list_id
+        )
+
+        if reading_list is None:
+            flash(
+                "The selected reading list does not exist.",
+                "danger"
             )
 
-            db.session.add(default_list)
-            db.session.commit()
-
-        list_id = default_list.id
+            return redirect(
+                url_for("news.index")
+            )
 
     saved_article = SavedArticle(
         user_id=user_id,
-        list_id=list_id,
+        list_id=reading_list.id,
         title=title,
         url=url,
         source=source,
@@ -148,14 +190,30 @@ def save_articles():
         published_at=published_at
     )
 
-    db.session.add(saved_article)
-    db.session.commit()
+    try:
+        db.session.add(saved_article)
+        db.session.commit()
 
-    flash("Article saved.", "success")
+    except Exception:
+        db.session.rollback()
 
-    return redirect(url_for("news.index"))
+        flash(
+            "The article could not be saved.",
+            "danger"
+        )
 
+        return redirect(
+            url_for("news.index")
+        )
 
+    flash(
+        "Article saved.",
+        "success"
+    )
+
+    return redirect(
+        url_for("news.index")
+    )
 @reading_lists_bp.route("/saved/<int:article_id>/read")
 @login_required
 def read_saved_article(article_id):
@@ -224,6 +282,7 @@ def save_note(article_id):
 
     if note:
         note.content = content
+        note.updated_at = datetime.utcnow()
     else:
         note = Note(
             saved_article_id=article.id,
@@ -446,25 +505,36 @@ def statistics():
         tag_rows=tag_rows
     )
 
-
 @reading_lists_bp.route("/<int:list_id>")
 @login_required
 def view_list(list_id):
+    user_id = session["user_id"]
 
     reading_list = ReadingList.query.filter_by(
         id=list_id,
-        user_id=session["user_id"]
+        user_id=user_id
     ).first_or_404()
 
-    articles = SavedArticle.query.filter_by(
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    pagination = SavedArticle.query.filter_by(
         list_id=reading_list.id,
-        user_id=session["user_id"]
+        user_id=user_id
     ).order_by(
         SavedArticle.saved_at.desc()
-    ).all()
+    ).paginate(
+        page=page,
+        per_page=15,
+        error_out=False
+    )
 
     return render_template(
         "reading_lists/view_list.html",
         reading_list=reading_list,
-        articles=articles
+        articles=pagination.items,
+        pagination=pagination
     )

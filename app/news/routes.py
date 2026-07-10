@@ -7,8 +7,7 @@ from flask import (
 
 from .services import NewsService
 from app.models import User, ReadingList
-from app.extensions import db
-
+from app.reading_lists.services import ReadingListService
 
 news_bp = Blueprint(
     "news",
@@ -27,20 +26,9 @@ def index():
 
         user = User.query.get(session.get("user_id"))
 
-        default_list = ReadingList.query.filter_by(
-            user_id=session.get("user_id"),
-            name="Saved Articles"
-        ).first()
-
-        if not default_list:
-
-            default_list = ReadingList(
-                user_id=session.get("user_id"),
-                name="Saved Articles"
-            )
-
-            db.session.add(default_list)
-            db.session.commit()
+        ReadingListService.get_or_create_default_list(
+            session["user_id"]
+        )
 
         all_lists = ReadingList.query.filter_by(
             user_id=session.get("user_id")
