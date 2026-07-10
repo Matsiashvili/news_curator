@@ -13,7 +13,9 @@ from app.decorators import login_required
 
 from app.models import (
     ReadingList,
-    SavedArticle
+    SavedArticle,
+    Note,
+    Tag
 )
 
 
@@ -168,23 +170,6 @@ def read_saved_article(article_id):
     return redirect(article.url)
 
 
-@reading_lists_bp.route("/saved/<int:article_id>/delete", methods=["POST"])
-@login_required
-def delete_saved_article(article_id):
-
-    article = SavedArticle.query.filter_by(
-        id=article_id,
-        user_id=session["user_id"]
-    ).first_or_404()
-
-    db.session.delete(article)
-    db.session.commit()
-
-    flash("Saved article removed.", "info")
-
-    return redirect(url_for("reading_lists.saved_articles"))
-
-
 @reading_lists_bp.route("/saved/<int:article_id>/toggle-read", methods=["POST"])
 @login_required
 def toggle_read_status(article_id):
@@ -200,4 +185,192 @@ def toggle_read_status(article_id):
 
     flash("Read status updated.", "success")
 
-    return redirect(url_for("reading_lists.saved_articles"))
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )
+
+
+@reading_lists_bp.route("/saved/<int:article_id>/note", methods=["POST"])
+@login_required
+def save_note(article_id):
+
+    article = SavedArticle.query.filter_by(
+        id=article_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    content = request.form.get(
+        "content",
+        ""
+    ).strip()
+
+    if len(content) > 500:
+
+        flash(
+            "Note cannot be longer than 500 characters.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("reading_lists.saved_articles")
+        )
+
+    note = Note.query.filter_by(
+        saved_article_id=article.id,
+        user_id=session["user_id"]
+    ).first()
+
+    if note:
+        note.content = content
+    else:
+        note = Note(
+            saved_article_id=article.id,
+            user_id=session["user_id"],
+            content=content
+        )
+
+        db.session.add(note)
+
+    db.session.commit()
+
+    flash("Note saved.", "success")
+
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )
+
+
+@reading_lists_bp.route("/saved/<int:article_id>/note/delete", methods=["POST"])
+@login_required
+def delete_note(article_id):
+
+    article = SavedArticle.query.filter_by(
+        id=article_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    note = Note.query.filter_by(
+        saved_article_id=article.id,
+        user_id=session["user_id"]
+    ).first()
+
+    if note:
+        db.session.delete(note)
+        db.session.commit()
+        flash("Note deleted.", "info")
+    else:
+        flash("No note to delete.", "warning")
+
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )
+
+
+@reading_lists_bp.route("/saved/<int:article_id>/delete", methods=["POST"])
+@login_required
+def delete_saved_article(article_id):
+
+    article = SavedArticle.query.filter_by(
+        id=article_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    Note.query.filter_by(
+        saved_article_id=article.id,
+        user_id=session["user_id"]
+    ).delete()
+
+    db.session.delete(article)
+
+    db.session.commit()
+
+    flash("Saved article removed.", "info")
+
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )
+
+@reading_lists_bp.route("/saved/<int:article_id>/tag", methods=["POST"])
+@login_required
+def add_tag(article_id):
+
+    article = SavedArticle.query.filter_by(
+        id=article_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    tag_name = request.form.get(
+        "tag_name",
+        ""
+    ).strip().lower()
+
+    if not tag_name:
+
+        flash("Tag name is required.", "danger")
+
+        return redirect(
+            url_for("reading_lists.saved_articles")
+        )
+
+    if len(tag_name) > 50:
+
+        flash("Tag name cannot be longer than 50 characters.", "danger")
+
+        return redirect(
+            url_for("reading_lists.saved_articles")
+        )
+
+    tag = Tag.query.filter_by(
+        name=tag_name
+    ).first()
+
+    if not tag:
+
+        tag = Tag(
+            name=tag_name
+        )
+
+        db.session.add(tag)
+        db.session.commit()
+
+    if tag not in article.tags:
+
+        article.tags.append(tag)
+
+        db.session.commit()
+
+        flash("Tag added.", "success")
+
+    else:
+
+        flash("Article already has this tag.", "warning")
+
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )
+
+
+@reading_lists_bp.route("/saved/<int:article_id>/tag/<int:tag_id>/remove", methods=["POST"])
+@login_required
+def remove_tag(article_id, tag_id):
+
+    article = SavedArticle.query.filter_by(
+        id=article_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    tag = Tag.query.get_or_404(
+        tag_id
+    )
+
+    if tag in article.tags:
+
+        article.tags.remove(tag)
+
+        db.session.commit()
+
+        flash("Tag removed.", "info")
+
+    return redirect(
+        url_for("reading_lists.saved_articles")
+    )

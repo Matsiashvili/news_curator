@@ -165,7 +165,8 @@ class SavedArticle(db.Model):
     notes = db.relationship(
         "Note",
         backref="article",
-        lazy=True
+        lazy=True,
+        cascade="all, delete-orphan"
     )
 
 

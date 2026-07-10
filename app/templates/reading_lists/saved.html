@@ -5,7 +5,6 @@ Saved Articles
 {% endblock %}
 
 {% block content %}
-
 <div class="d-flex justify-content-between align-items-center mb-4">
 
     <div>
@@ -14,7 +13,7 @@ Saved Articles
         </h1>
 
         <p class="text-muted mb-0">
-            Manage your saved articles and reading status.
+            Manage saved articles, notes, and reading status.
         </p>
     </div>
 
@@ -89,8 +88,133 @@ Saved Articles
                         </p>
 
 
+                        <!-- NOTE FORM -->
+                        <form method="POST"
+                              action="{{ url_for('reading_lists.save_note', article_id=article.id) }}"
+                              class="mb-2">
+
+                            <input type="hidden"
+                                   name="csrf_token"
+                                   value="{{ csrf_token() }}">
+
+                            <label class="form-label small fw-bold">
+                                Private Note
+                            </label>
+
+                            <textarea name="content"
+                                      class="form-control"
+                                      maxlength="500"
+                                      rows="3"
+                                      placeholder="Write a private note...">{% if article.notes %}{{ article.notes[0].content }}{% endif %}</textarea>
+
+                            <div class="form-text">
+                                Maximum 500 characters.
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-outline-primary btn-sm mt-2 w-100">
+
+                                Save Note
+
+                            </button>
+
+                        </form>
+
+
+                        <!-- DELETE NOTE BUTTON -->
+                        {% if article.notes %}
+
+                            <form method="POST"
+                                  action="{{ url_for('reading_lists.delete_note', article_id=article.id) }}"
+                                  class="mb-3">
+
+                                <input type="hidden"
+                                       name="csrf_token"
+                                       value="{{ csrf_token() }}">
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm w-100">
+
+                                    Delete Note
+
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                        <!-- TAGS -->
+                        <div class="mb-3">
+
+                            <label class="form-label small fw-bold">
+                                Tags
+                            </label>
+
+                            <div class="mb-2">
+
+                                {% if article.tags %}
+
+                                    {% for tag in article.tags %}
+
+                                        <span class="badge bg-primary me-1 mb-1">
+                                            {{ tag.name }}
+                                        </span>
+
+                                        <form method="POST"
+                                            action="{{ url_for('reading_lists.remove_tag', article_id=article.id, tag_id=tag.id) }}"
+                                            class="d-inline">
+
+                                            <input type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-link text-danger p-0 me-2">
+
+                                                x
+
+                                            </button>
+
+                                        </form>
+
+                                    {% endfor %}
+
+                                {% else %}
+
+                                    <p class="small text-muted mb-2">
+                                        No tags yet.
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+                            <form method="POST"
+                                action="{{ url_for('reading_lists.add_tag', article_id=article.id) }}">
+
+                                <input type="hidden"
+                                    name="csrf_token"
+                                    value="{{ csrf_token() }}">
+
+                                <div class="input-group input-group-sm">
+
+                                    <input type="text"
+                                        name="tag_name"
+                                        class="form-control"
+                                        placeholder="Add tag">
+
+                                    <button class="btn btn-outline-primary">
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
                         <div class="mt-auto d-grid gap-2">
 
+                            <!-- READ ARTICLE -->
                             <a href="{{ url_for('reading_lists.read_saved_article', article_id=article.id) }}"
                                target="_blank"
                                class="btn btn-dark btn-sm">
@@ -100,6 +224,7 @@ Saved Articles
                             </a>
 
 
+                            <!-- TOGGLE READ STATUS -->
                             <form method="POST"
                                   action="{{ url_for('reading_lists.toggle_read_status', article_id=article.id) }}">
 
@@ -121,6 +246,7 @@ Saved Articles
                             </form>
 
 
+                            <!-- REMOVE ARTICLE -->
                             <form method="POST"
                                   action="{{ url_for('reading_lists.delete_saved_article', article_id=article.id) }}">
 
@@ -131,7 +257,7 @@ Saved Articles
                                 <button type="submit"
                                         class="btn btn-outline-danger btn-sm w-100">
 
-                                    Remove
+                                    Remove Article
 
                                 </button>
 
@@ -158,3 +284,4 @@ Saved Articles
 {% endif %}
 
 {% endblock %}
+
