@@ -6,7 +6,7 @@ from flask import (
 )
 
 from .services import NewsService
-from app.models import User
+from app.models import User, ReadingList
 
 
 news_bp = Blueprint(
@@ -20,12 +20,16 @@ news_bp = Blueprint(
 def index():
 
     user = None
+    reading_lists = []
 
     if session.get("user_id"):
-        user = User.query.get(
-            session["user_id"]
-        )
+        user = User.query.get(session["user_id"])
 
+    reading_lists = ReadingList.query.filter_by(
+        user_id=session["user_id"]
+    ).order_by(
+        ReadingList.created_at.desc()
+    ).all()
     category = request.args.get(
         "category"
     )
@@ -108,5 +112,6 @@ def index():
         query=query,
         page=page,
         total_results=total_results,
-        sources=sources
+        sources=sources,
+        reading_lists=reading_lists
     )

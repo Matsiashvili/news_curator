@@ -445,3 +445,26 @@ def statistics():
         source_rows=source_rows,
         tag_rows=tag_rows
     )
+
+
+@reading_lists_bp.route("/<int:list_id>")
+@login_required
+def view_list(list_id):
+
+    reading_list = ReadingList.query.filter_by(
+        id=list_id,
+        user_id=session["user_id"]
+    ).first_or_404()
+
+    articles = SavedArticle.query.filter_by(
+        list_id=reading_list.id,
+        user_id=session["user_id"]
+    ).order_by(
+        SavedArticle.saved_at.desc()
+    ).all()
+
+    return render_template(
+        "reading_lists/view_list.html",
+        reading_list=reading_list,
+        articles=articles
+    )

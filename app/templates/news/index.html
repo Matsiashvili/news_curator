@@ -9,6 +9,7 @@ News Feed
 <div class="d-flex justify-content-between align-items-center mb-4">
 
     <div>
+
         <h1 class="fw-bold mb-1">
             News Feed
         </h1>
@@ -16,16 +17,19 @@ News Feed
         <p class="text-muted mb-0">
             Browse headlines by category, country, source, or search.
         </p>
+
     </div>
 
 </div>
 
 
-<form method="GET" class="card card-body shadow-sm mb-4">
+<form method="GET"
+      class="card card-body shadow-sm mb-4">
 
     <div class="row">
 
         <div class="col-md-3 mb-3">
+
             <label class="form-label">
                 Search
             </label>
@@ -35,81 +39,145 @@ News Feed
                    class="form-control"
                    placeholder="Search news..."
                    value="{{ query or '' }}">
+
         </div>
 
 
         <div class="col-md-3 mb-3">
+
             <label class="form-label">
                 Category
             </label>
 
-            <select name="category" class="form-select">
+            <select name="category"
+                    class="form-select">
 
-                <option value="" {% if not category %}selected{% endif %}>
+                <option value=""
+                        {% if not category %}
+                        selected
+                        {% endif %}>
+
                     All Categories
+
                 </option>
 
-                <option value="technology" {% if category == "technology" %}selected{% endif %}>
+                <option value="technology"
+                        {% if category == "technology" %}
+                        selected
+                        {% endif %}>
+
                     Technology
+
                 </option>
 
-                <option value="business" {% if category == "business" %}selected{% endif %}>
+                <option value="business"
+                        {% if category == "business" %}
+                        selected
+                        {% endif %}>
+
                     Business
+
                 </option>
 
-                <option value="sports" {% if category == "sports" %}selected{% endif %}>
+                <option value="sports"
+                        {% if category == "sports" %}
+                        selected
+                        {% endif %}>
+
                     Sports
+
                 </option>
 
-                <option value="science" {% if category == "science" %}selected{% endif %}>
+                <option value="science"
+                        {% if category == "science" %}
+                        selected
+                        {% endif %}>
+
                     Science
+
                 </option>
 
-                <option value="health" {% if category == "health" %}selected{% endif %}>
+                <option value="health"
+                        {% if category == "health" %}
+                        selected
+                        {% endif %}>
+
                     Health
+
                 </option>
 
-                <option value="entertainment" {% if category == "entertainment" %}selected{% endif %}>
+                <option value="entertainment"
+                        {% if category == "entertainment" %}
+                        selected
+                        {% endif %}>
+
                     Entertainment
+
                 </option>
 
             </select>
+
         </div>
 
 
         <div class="col-md-3 mb-3">
+
             <label class="form-label">
                 Country
             </label>
 
-            <select name="country" class="form-select">
+            <select name="country"
+                    class="form-select">
 
-                <option value="us" {% if country == "us" %}selected{% endif %}>
+                <option value="us"
+                        {% if country == "us" %}
+                        selected
+                        {% endif %}>
+
                     United States
+
                 </option>
 
-                <option value="gb" {% if country == "gb" %}selected{% endif %}>
+                <option value="gb"
+                        {% if country == "gb" %}
+                        selected
+                        {% endif %}>
+
                     United Kingdom
+
                 </option>
 
-                <option value="de" {% if country == "de" %}selected{% endif %}>
+                <option value="de"
+                        {% if country == "de" %}
+                        selected
+                        {% endif %}>
+
                     Germany
+
                 </option>
 
-                <option value="fr" {% if country == "fr" %}selected{% endif %}>
+                <option value="fr"
+                        {% if country == "fr" %}
+                        selected
+                        {% endif %}>
+
                     France
+
                 </option>
 
             </select>
+
         </div>
 
 
         <div class="col-md-3 mb-3">
+
             <label class="form-label">
                 Source
             </label>
 
-            <select name="source" class="form-select">
+            <select name="source"
+                    class="form-select">
 
                 {% for source_id, source_name in sources %}
 
@@ -129,6 +197,7 @@ News Feed
             <div class="form-text">
                 Source overrides country/category.
             </div>
+
         </div>
 
     </div>
@@ -156,12 +225,16 @@ News Feed
 
     <p class="text-muted mb-0">
         Results found:
-        <strong>{{ total_results }}</strong>
+        <strong>
+            {{ total_results }}
+        </strong>
     </p>
 
     <p class="text-muted mb-0">
         Page:
-        <strong>{{ page }}</strong>
+        <strong>
+            {{ page }}
+        </strong>
     </p>
 
 </div>
@@ -229,13 +302,13 @@ News Feed
                         </p>
 
 
-                        <div class="mt-auto">
+                        <div class="mt-auto d-grid gap-2">
 
                             {% if article.url %}
 
                                 <a href="{{ article.url }}"
                                    target="_blank"
-                                   class="btn btn-dark btn-sm w-100 mb-2">
+                                   class="btn btn-dark btn-sm">
 
                                     Read Article
 
@@ -273,18 +346,29 @@ News Feed
                                            name="published_at"
                                            value="{{ article.publishedAt or '' }}">
 
-                                    <button type="submit"
-                                            class="btn btn-outline-primary btn-sm w-100">
 
+                                  <select name="list_id"
+                                            class="form-select form-select-sm mb-2">
+
+                                        {% for reading_list in reading_lists %}
+
+                                            <option value="{{ reading_list.id }}">
+                                                {{ reading_list.name }}
+                                            </option>
+
+                                        {% endfor %}
+
+                                    </select>
+
+                                    <button class="btn btn-outline-primary btn-sm w-100">
                                         Save Article
-
                                     </button>
 
                                 </form>
 
                             {% else %}
 
-                                <p class="small text-muted mt-2 mb-0">
+                                <p class="small text-muted mb-0">
                                     Login to save articles.
                                 </p>
 

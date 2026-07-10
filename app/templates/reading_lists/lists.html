@@ -6,9 +6,27 @@ Reading Lists
 
 {% block content %}
 
-<h1 class="fw-bold mb-4">
-    Reading Lists
-</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h1 class="fw-bold mb-1">
+            Reading Lists
+        </h1>
+
+        <p class="text-muted mb-0">
+            Create and open your article folders.
+        </p>
+    </div>
+
+    <a href="{{ url_for('reading_lists.saved_articles') }}"
+       class="btn btn-outline-primary">
+
+        All Saved Articles
+
+    </a>
+
+</div>
+
 
 <form method="POST"
       action="{{ url_for('reading_lists.create_list') }}"
@@ -18,8 +36,8 @@ Reading Lists
            name="csrf_token"
            value="{{ csrf_token() }}">
 
-    <label class="form-label">
-        New list name
+    <label class="form-label fw-bold">
+        New Reading List
     </label>
 
     <div class="input-group">
@@ -27,7 +45,7 @@ Reading Lists
         <input type="text"
                name="name"
                class="form-control"
-               placeholder="Example: AI Research">
+               placeholder="Example: AI Articles">
 
         <button class="btn btn-primary">
             Create List
@@ -37,38 +55,47 @@ Reading Lists
 
 </form>
 
-<div class="row g-4">
 
-    {% for reading_list in reading_lists %}
+{% if reading_lists %}
 
-        <div class="col-md-4">
+    <div class="row g-4">
 
-            <div class="card shadow-sm h-100">
+        {% for reading_list in reading_lists %}
 
-                <div class="card-body">
+            <div class="col-md-4">
 
-                    <h5 class="fw-bold">
+                <div class="feature-card">
+
+                    <h4 class="fw-bold">
                         {{ reading_list.name }}
-                    </h5>
+                    </h4>
 
                     <p class="text-muted small">
-                        Created: {{ reading_list.created_at }}
+                        Created:
+                        {{ reading_list.created_at|format_date }}
                     </p>
+
+                    <a href="{{ url_for('reading_lists.view_list', list_id=reading_list.id) }}"
+                       class="btn btn-dark btn-sm w-100">
+
+                        View Articles
+
+                    </a>
 
                 </div>
 
             </div>
 
-        </div>
+        {% endfor %}
 
-    {% else %}
+    </div>
 
-        <div class="alert alert-info">
-            You do not have any reading lists yet.
-        </div>
+{% else %}
 
-    {% endfor %}
+    <div class="alert alert-info">
+        No reading lists yet.
+    </div>
 
-</div>
+{% endif %}
 
 {% endblock %}
