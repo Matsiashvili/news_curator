@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}
+Reading Lists
+{% endblock %}
+
+{% block content %}
+
+<h1 class="fw-bold mb-4">
+    Reading Lists
+</h1>
+
+<form method="POST"
+      action="{{ url_for('reading_lists.create_list') }}"
+      class="card card-body shadow-sm mb-4">
+
+    <input type="hidden"
+           name="csrf_token"
+           value="{{ csrf_token() }}">
+
+    <label class="form-label">
+        New list name
+    </label>
+
+    <div class="input-group">
+
+        <input type="text"
+               name="name"
+               class="form-control"
+               placeholder="Example: AI Research">
+
+        <button class="btn btn-primary">
+            Create List
+        </button>
+
+    </div>
+
+</form>
+
+<div class="row g-4">
+
+    {% for reading_list in reading_lists %}
+
+        <div class="col-md-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="fw-bold">
+                        {{ reading_list.name }}
+                    </h5>
+
+                    <p class="text-muted small">
+                        Created: {{ reading_list.created_at }}
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-info">
+            You do not have any reading lists yet.
+        </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

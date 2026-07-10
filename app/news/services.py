@@ -5,7 +5,8 @@ from flask import current_app
 
 class BaseAPIService:
     """
-    Base class for API services.
+    Base service class for external API requests.
+    This demonstrates inheritance.
     """
 
     def get(self, url, params=None):
@@ -20,14 +21,12 @@ class BaseAPIService:
         return response.json()
 
 
-
 class NewsService(BaseAPIService):
     """
-    NewsAPI service.
+    Service for communicating with NewsAPI.
     """
 
     BASE_URL = "https://newsapi.org/v2"
-
 
     def __init__(self):
 
@@ -35,24 +34,57 @@ class NewsService(BaseAPIService):
             "NEWS_API_KEY"
         )
 
-
     def get_headlines(
         self,
         country="us",
         category=None,
+        source=None,
         page=1
     ):
 
         url = f"{self.BASE_URL}/top-headlines"
 
+        params = {
+            "apiKey": self.api_key,
+            "page": page,
+            "pageSize": 15
+        }
+
+        if source:
+            params["sources"] = source
+        else:
+            params["country"] = country
+
+            if category:
+                params["category"] = category
+
+        return self.get(
+            url,
+            params=params
+        )
+
+    def search_articles(
+        self,
+        query,
+        page=1,
+        source=None
+    ):
+
+        url = f"{self.BASE_URL}/everything"
 
         params = {
             "apiKey": self.api_key,
-            "country": country,
-            "category": category,
+            "q": query,
             "page": page,
+            "pageSize": 15,
+            "language": "en",
+            "sortBy": "publishedAt"
         }
 
-        params = {k: v for k, v in params.items() if v is not None}
+        if source:
+            params["sources"] = source
 
-        return self.get(url, params=params)
+        return self.get(
+            url,
+            params=params
+        )

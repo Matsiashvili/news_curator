@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+Preferences
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">
+    News Preferences
+</h2>
+
+<form method="POST">
+
+    <input type="hidden"
+           name="csrf_token"
+           value="{{ csrf_token() }}">
+
+    <h5>
+        Preferred Categories
+    </h5>
+
+    {% for category in categories %}
+
+        <div class="form-check">
+
+            <input class="form-check-input"
+                   type="checkbox"
+                   name="categories"
+                   value="{{ category }}"
+                   id="category-{{ category }}"
+                   {% if category in selected_categories %}
+                   checked
+                   {% endif %}>
+
+            <label class="form-check-label"
+                   for="category-{{ category }}">
+
+                {{ category|title }}
+
+            </label>
+
+        </div>
+
+    {% endfor %}
+
+    <h5 class="mt-4">
+        Country
+    </h5>
+
+    <select name="country"
+            class="form-select mb-3">
+
+        {% for code, name in countries %}
+
+            <option value="{{ code }}"
+                    {% if user.country == code %}
+                    selected
+                    {% endif %}>
+
+                {{ name }}
+
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+    <button class="btn btn-primary">
+        Save Preferences
+    </button>
+
+</form>
+
+{% endblock %}

@@ -1,34 +1,372 @@
 {% extends "base.html" %}
 
+{% block title %}
+News Feed
+{% endblock %}
 
 {% block content %}
 
-<h1>News Feed</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h1 class="fw-bold mb-1">
+            News Feed
+        </h1>
+
+        <p class="text-muted mb-0">
+            Browse headlines by category, country, source, or search.
+        </p>
+    </div>
+
+</div>
 
 
-<p>
-Articles received: {{ articles|length }}
-</p>
+<form method="GET" class="card card-body shadow-sm mb-4">
+
+    <div class="row">
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">
+                Search
+            </label>
+
+            <input type="text"
+                   name="q"
+                   class="form-control"
+                   placeholder="Search news..."
+                   value="{{ query or '' }}">
+        </div>
 
 
-{% for article in articles %}
+        <div class="col-md-3 mb-3">
+            <label class="form-label">
+                Category
+            </label>
 
-<hr>
+            <select name="category" class="form-select">
 
-<h2>
-{{ article.title }}
-</h2>
+                <option value="" {% if not category %}selected{% endif %}>
+                    All Categories
+                </option>
 
-<p>
-{{ article.description }}
-</p>
+                <option value="technology" {% if category == "technology" %}selected{% endif %}>
+                    Technology
+                </option>
 
-<a href="{{ article.url }}" target="_blank">
-Read Article
-</a>
+                <option value="business" {% if category == "business" %}selected{% endif %}>
+                    Business
+                </option>
+
+                <option value="sports" {% if category == "sports" %}selected{% endif %}>
+                    Sports
+                </option>
+
+                <option value="science" {% if category == "science" %}selected{% endif %}>
+                    Science
+                </option>
+
+                <option value="health" {% if category == "health" %}selected{% endif %}>
+                    Health
+                </option>
+
+                <option value="entertainment" {% if category == "entertainment" %}selected{% endif %}>
+                    Entertainment
+                </option>
+
+            </select>
+        </div>
 
 
-{% endfor %}
+        <div class="col-md-3 mb-3">
+            <label class="form-label">
+                Country
+            </label>
 
+            <select name="country" class="form-select">
+
+                <option value="us" {% if country == "us" %}selected{% endif %}>
+                    United States
+                </option>
+
+                <option value="gb" {% if country == "gb" %}selected{% endif %}>
+                    United Kingdom
+                </option>
+
+                <option value="de" {% if country == "de" %}selected{% endif %}>
+                    Germany
+                </option>
+
+                <option value="fr" {% if country == "fr" %}selected{% endif %}>
+                    France
+                </option>
+
+            </select>
+        </div>
+
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">
+                Source
+            </label>
+
+            <select name="source" class="form-select">
+
+                {% for source_id, source_name in sources %}
+
+                    <option value="{{ source_id }}"
+                            {% if source == source_id %}
+                            selected
+                            {% endif %}>
+
+                        {{ source_name }}
+
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <div class="form-text">
+                Source overrides country/category.
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="d-flex gap-2">
+
+        <button class="btn btn-primary">
+            Apply Filters
+        </button>
+
+        <a href="{{ url_for('news.index') }}"
+           class="btn btn-outline-secondary">
+
+            Clear
+
+        </a>
+
+    </div>
+
+</form>
+
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <p class="text-muted mb-0">
+        Results found:
+        <strong>{{ total_results }}</strong>
+    </p>
+
+    <p class="text-muted mb-0">
+        Page:
+        <strong>{{ page }}</strong>
+    </p>
+
+</div>
+
+
+{% if articles %}
+
+    <div class="row g-4">
+
+        {% for article in articles %}
+
+            <div class="col-md-4">
+
+                <div class="news-card h-100 d-flex flex-column">
+
+                    {% if article.urlToImage %}
+
+                        <img src="{{ article.urlToImage }}"
+                             class="news-image"
+                             alt="Article image">
+
+                    {% else %}
+
+                        <div class="news-placeholder">
+                            No Image
+                        </div>
+
+                    {% endif %}
+
+
+                    <div class="p-3 d-flex flex-column flex-grow-1">
+
+                        <p class="text-muted small mb-1">
+
+                            {% if article.source %}
+
+                                {{ article.source.name }}
+
+                            {% else %}
+
+                                Unknown source
+
+                            {% endif %}
+
+                        </p>
+
+
+                        <h5 class="fw-bold">
+                            {{ article.title }}
+                        </h5>
+
+
+                        <p class="text-muted">
+
+                            {% if article.description %}
+
+                                {{ article.description }}
+
+                            {% else %}
+
+                                No description available.
+
+                            {% endif %}
+
+                        </p>
+
+
+                        <div class="mt-auto">
+
+                            {% if article.url %}
+
+                                <a href="{{ article.url }}"
+                                   target="_blank"
+                                   class="btn btn-dark btn-sm w-100 mb-2">
+
+                                    Read Article
+
+                                </a>
+
+                            {% endif %}
+
+
+                            {% if session.get("user_id") %}
+
+                                <form method="POST"
+                                      action="{{ url_for('reading_lists.save_articles') }}">
+
+                                    <input type="hidden"
+                                           name="csrf_token"
+                                           value="{{ csrf_token() }}">
+
+                                    <input type="hidden"
+                                           name="title"
+                                           value="{{ article.title }}">
+
+                                    <input type="hidden"
+                                           name="url"
+                                           value="{{ article.url }}">
+
+                                    <input type="hidden"
+                                           name="source"
+                                           value="{% if article.source %}{{ article.source.name }}{% endif %}">
+
+                                    <input type="hidden"
+                                           name="image_url"
+                                           value="{{ article.urlToImage or '' }}">
+
+                                    <input type="hidden"
+                                           name="published_at"
+                                           value="{{ article.publishedAt or '' }}">
+
+                                    <button type="submit"
+                                            class="btn btn-outline-primary btn-sm w-100">
+
+                                        Save Article
+
+                                    </button>
+
+                                </form>
+
+                            {% else %}
+
+                                <p class="small text-muted mt-2 mb-0">
+                                    Login to save articles.
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+{% else %}
+
+    <div class="alert alert-warning">
+        No articles found.
+    </div>
+
+{% endif %}
+
+
+<nav class="mt-5">
+
+    <ul class="pagination justify-content-center">
+
+        {% if page > 1 %}
+
+            <li class="page-item">
+
+                <a class="page-link"
+                   href="{{ url_for('news.index',
+                                    page=page-1,
+                                    category=category,
+                                    country=country,
+                                    source=source,
+                                    q=query) }}">
+
+                    Previous
+
+                </a>
+
+            </li>
+
+        {% endif %}
+
+
+        <li class="page-item active">
+
+            <span class="page-link">
+                Page {{ page }}
+            </span>
+
+        </li>
+
+
+        {% if articles|length == 15 %}
+
+            <li class="page-item">
+
+                <a class="page-link"
+                   href="{{ url_for('news.index',
+                                    page=page+1,
+                                    category=category,
+                                    country=country,
+                                    source=source,
+                                    q=query) }}">
+
+                    Next
+
+                </a>
+
+            </li>
+
+        {% endif %}
+
+    </ul>
+
+</nav>
 
 {% endblock %}

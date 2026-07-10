@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+<section class="hero-section">
+
+    <div class="row align-items-center">
+
+        <div class="col-md-7">
+
+            <h1 class="display-4 fw-bold">
+                Curate the news that matters to you.
+            </h1>
+
+            <p class="lead text-muted mt-3">
+                Browse headlines, search topics, save articles,
+                organize reading lists, add notes, and track what you read.
+            </p>
+
+            <div class="mt-4">
+
+                <a href="{{ url_for('news.index') }}"
+                   class="btn btn-primary btn-lg me-2">
+
+                    Explore News
+
+                </a>
+
+                {% if not session.get("user_id") %}
+
+                    <a href="{{ url_for('auth.register') }}"
+                       class="btn btn-outline-dark btn-lg">
+
+                        Create Account
+
+                    </a>
+
+                {% else %}
+
+                    <a href="{{ url_for('auth.profile') }}"
+                       class="btn btn-outline-dark btn-lg">
+
+                        View Profile
+
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="col-md-5 mt-4 mt-md-0">
+
+            <div class="hero-card shadow-sm">
+
+                <div class="hero-card-image"></div>
+
+                <div class="p-4">
+
+                    <span class="badge bg-primary mb-2">
+                        Personalized Feed
+                    </span>
+
+                    <h4>
+                        Technology, business, sports and more.
+                    </h4>
+
+                    <p class="text-muted">
+                        Your preferred country and categories shape your default news feed.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<section class="mt-5">
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+
+            <div class="feature-card">
+
+                <h5>
+                    Search News
+                </h5>
+
+                <p>
+                    Use NewsAPI search to find articles on any topic.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="feature-card">
+
+                <h5>
+                    Save for Later
+                </h5>
+
+                <p>
+                    Organize articles into named reading lists.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+
+            <div class="feature-card">
+
+                <h5>
+                    Notes and Tags
+                </h5>
+
+                <p>
+                    Add private notes and custom tags to saved articles.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}
