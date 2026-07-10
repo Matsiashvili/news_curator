@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}
+Statistics
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+
+    <h1 class="fw-bold mb-1">
+        Reading Statistics
+    </h1>
+
+    <p class="text-muted mb-0">
+        See your reading habits, saved articles, favorite tags, and top sources.
+    </p>
+
+</div>
+
+
+<div class="row g-4 mb-4">
+
+    <div class="col-md-3">
+        <div class="feature-card text-center">
+            <h2 class="fw-bold">
+                {{ total_saved }}
+            </h2>
+            <p class="text-muted mb-0">
+                Total Saved
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="feature-card text-center">
+            <h2 class="fw-bold">
+                {{ saved_this_week }}
+            </h2>
+            <p class="text-muted mb-0">
+                Saved This Week
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="feature-card text-center">
+            <h2 class="fw-bold">
+                {{ read_count }}
+            </h2>
+            <p class="text-muted mb-0">
+                Read Articles
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="feature-card text-center">
+            <h2 class="fw-bold">
+                {{ unread_count }}
+            </h2>
+            <p class="text-muted mb-0">
+                Unread Articles
+            </p>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row g-4">
+
+    <div class="col-md-6">
+
+        <div class="feature-card">
+
+            <h4 class="fw-bold mb-3">
+                Top Source
+            </h4>
+
+            {% if top_source %}
+
+                <p class="fs-4 mb-3">
+                    {{ top_source }}
+                </p>
+
+            {% else %}
+
+                <p class="text-muted">
+                    No source data yet.
+                </p>
+
+            {% endif %}
+
+
+            <h6 class="fw-bold mt-4">
+                All Sources
+            </h6>
+
+            {% if source_rows %}
+
+                <ul class="list-group list-group-flush">
+
+                    {% for source, count in source_rows %}
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ source }}
+                            <span class="badge bg-primary rounded-pill">
+                                {{ count }}
+                            </span>
+                        </li>
+
+                    {% endfor %}
+
+                </ul>
+
+            {% else %}
+
+                <p class="text-muted">
+                    No saved sources yet.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="col-md-6">
+
+        <div class="feature-card">
+
+            <h4 class="fw-bold mb-3">
+                Favorite Tags
+            </h4>
+
+            {% if tag_rows %}
+
+                {% for tag_name, count in tag_rows %}
+
+                    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+
+                        <span>
+                            #{{ tag_name }}
+                        </span>
+
+                        <span class="badge bg-primary">
+                            {{ count }}
+                        </span>
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <p class="text-muted">
+                    No tags yet. Add tags to saved articles first.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

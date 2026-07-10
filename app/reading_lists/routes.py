@@ -7,6 +7,8 @@ from flask import (
     flash,
     session
 )
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 from app.extensions import db
 from app.decorators import login_required
@@ -373,4 +375,73 @@ def remove_tag(article_id, tag_id):
 
     return redirect(
         url_for("reading_lists.saved_articles")
+    )
+
+@reading_lists_bp.route("/statistics")
+@login_required
+def statistics():
+
+    user_id = session["user_id"]
+
+    one_week_ago = datetime.utcnow() - timedelta(days=7)
+
+    saved_this_week = SavedArticle.query.filter(
+        SavedArticle.user_id == user_id,
+        SavedArticle.saved_at >= one_week_ago
+    ).count()
+
+    total_saved = SavedArticle.query.filter_by(
+        user_id=user_id
+    ).count()
+
+    read_count = SavedArticle.query.filter_by(
+        user_id=user_id,
+        is_read=True
+    ).count()
+
+    unread_count = SavedArticle.query.filter_by(
+        user_id=user_id,
+        is_read=False
+    ).count()
+
+    source_rows = db.session.query(
+        SavedArticle.source,
+        func.count(SavedArticle.id)
+    ).filter(
+        SavedArticle.user_id == user_id,
+        SavedArticle.source.isnot(None),
+        SavedArticle.source != ""
+    ).group_by(
+        SavedArticle.source
+    ).order_by(
+        func.count(SavedArticle.id).desc()
+    ).all()
+
+    top_source = None
+
+    if source_rows:
+        top_source = source_rows[0][0]
+
+    tag_rows = db.session.query(
+        Tag.name,
+        func.count(Tag.id)
+    ).join(
+        SavedArticle.tags
+    ).filter(
+        SavedArticle.user_id == user_id
+    ).group_by(
+        Tag.name
+    ).order_by(
+        func.count(Tag.id).desc()
+    ).limit(5).all()
+
+    return render_template(
+        "reading_lists/statistics.html",
+        saved_this_week=saved_this_week,
+        total_saved=total_saved,
+        read_count=read_count,
+        unread_count=unread_count,
+        top_source=top_source,
+        source_rows=source_rows,
+        tag_rows=tag_rows
     )
